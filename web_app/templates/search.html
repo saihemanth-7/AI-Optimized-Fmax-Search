@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Search Comparison{% endblock %}
+{% block page_heading %}Conventional vs. AI-Windowed Binary Search{% endblock %}
+
+{% block content %}
+<!-- Page Subtitle -->
+<div class="mb-4">
+    <p class="text-secondary mb-0">
+        Compare conventional binary search against AI-windowed binary search to see how machine learning reduces semiconductor test time.
+    </p>
+</div>
+
+<!-- ======================================================================== -->
+<!-- SECTION 1: Select Chip                                                   -->
+<!-- ======================================================================== -->
+<div class="card-dark mb-4">
+    <h6 class="fw-bold text-white mb-3">
+        <i class="bi bi-cpu text-primary me-2"></i>1. Select Chip
+    </h6>
+    <form id="searchConfigForm">
+        <div class="row g-3 align-items-end">
+            <!-- Chip Dropdown -->
+            <div class="col-md-4 col-sm-12">
+                <label class="form-label-custom" for="curatedUnitSelect">Chip ID</label>
+                <select class="form-select form-control-dark" id="curatedUnitSelect">
+                    <option value="" disabled selected>Loading chips...</option>
+                </select>
+            </div>
+
+            <!-- Predicted Fmax -->
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label-custom" for="inputPredFmax">Predicted Fmax</label>
+                <div class="input-group">
+                    <input type="number" step="any" min="1" class="form-control form-control-dark" id="inputPredFmax" placeholder="e.g. 1976.0" required>
+                    <span class="input-group-text bg-dark border-secondary text-secondary">MHz</span>
+                </div>
+            </div>
+
+            <!-- Actual Fmax -->
+            <div class="col-md-3 col-sm-6">
+                <label class="form-label-custom" for="inputTrueFmax">Actual (Ground Truth) Fmax</label>
+                <div class="input-group">
+                    <input type="number" step="any" min="1" class="form-control form-control-dark" id="inputTrueFmax" placeholder="e.g. 2013.4" required>
+                    <span class="input-group-text bg-dark border-secondary text-secondary">MHz</span>
+                </div>
+            </div>
+
+            <!-- Run Search Button -->
+            <div class="col-md-2 col-sm-12">
+                <button type="submit" class="btn btn-primary w-100 py-2" id="btnRunSearch">
+                    <span class="spinner-border spinner-border-sm me-1 d-none" id="searchSpinner" role="status"></span>
+                    <i class="bi bi-play-fill me-1" id="searchPlayIcon"></i> Run Search
+                </button>
+            </div>
+        </div>
+        <!-- Error Message Alert -->
+        <div class="alert alert-danger d-none mt-3 mb-0" id="searchErrorAlert" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><span id="searchErrorMessage"></span>
+        </div>
+    </form>
+</div>
+
+<!-- ======================================================================== -->
+<!-- SECTION 2: Search Results Comparison                                     -->
+<!-- ======================================================================== -->
+<div class="mb-4">
+    <h6 class="fw-bold text-white mb-3">
+        <i class="bi bi-bar-chart-steps text-cyan me-2"></i>2. Search Results Comparison
+    </h6>
+
+    <!-- Two Side-by-Side Cards -->
+    <div class="row g-3 mb-3">
+        <!-- Conventional Binary Search Card -->
+        <div class="col-md-6">
+            <div class="card-dark h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-white fs-6">Conventional Binary Search</span>
+                    <span class="badge bg-secondary-subtle text-light border border-secondary-subtle">Baseline</span>
+                </div>
+                <div class="mb-3">
+                    <div class="text-secondary small">Tests Performed</div>
+                    <div class="fs-2 fw-bold text-white" id="cardConvTests">-</div>
+                </div>
+                <div class="row g-2 pt-2" style="border-top: 1px solid var(--border-color);">
+                    <div class="col-6">
+                        <span class="text-secondary small">Measured Fmax:</span>
+                        <div class="fw-bold text-white" id="cardConvFmax">-</div>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-secondary small">Speed Bin:</span>
+                        <div class="fw-bold text-info" id="cardConvBin">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI-Windowed Binary Search Card -->
+        <div class="col-md-6">
+            <div class="card-dark h-100" style="border-color: rgba(59, 130, 246, 0.4);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-primary fs-6">AI-Windowed Binary Search</span>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle" id="cardAiMethodBadge">Direct Search</span>
+                </div>
+                <div class="mb-3">
+                    <div class="text-secondary small">Tests Performed</div>
+                    <div class="fs-2 fw-bold text-cyan" id="cardAiTests">-</div>
+                </div>
+                <div class="row g-2 pt-2" style="border-top: 1px solid var(--border-color);">
+                    <div class="col-6">
+                        <span class="text-secondary small">Measured Fmax:</span>
+                        <div class="fw-bold text-white" id="cardAiFmax">-</div>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-secondary small">Speed Bin:</span>
+                        <div class="fw-bold text-cyan" id="cardAiBin">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Savings & Reduction Highlight Banner -->
+    <div class="p-3 rounded bg-dark border" id="savingsBanner" style="border-color: rgba(16, 185, 129, 0.4);">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+                <span class="text-secondary small d-block">Test Step Outcome</span>
+                <span class="fs-4 fw-bold" id="savingsMainText">-</span>
+            </div>
+            <div class="text-md-end text-secondary small" id="savingsSubText">
+                -
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================== -->
+<!-- SECTION 3: Execution Logs                                                -->
+<!-- ======================================================================== -->
+<div class="mb-4">
+    <h6 class="fw-bold text-white mb-3">
+        <i class="bi bi-list-check text-teal me-2"></i>3. Execution Logs
+    </h6>
+
+    <div class="row g-3">
+        <!-- Conventional Search Log -->
+        <div class="col-md-6">
+            <div class="card-dark h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-semibold text-white">Conventional Search Log</span>
+                    <span class="badge bg-secondary-subtle text-secondary" id="badgeConvTotalSteps">-</span>
+                </div>
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table-dark-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Step</th>
+                                <th style="width: 45%;">Frequency Tested</th>
+                                <th style="width: 30%;">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableConvTraceBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI-Windowed Search Log -->
+        <div class="col-md-6">
+            <div class="card-dark h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-semibold text-primary">AI-Windowed Search Log</span>
+                    <span class="badge bg-primary-subtle text-primary" id="badgeAiTotalSteps">-</span>
+                </div>
+                <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                    <table class="table-dark-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Step</th>
+                                <th style="width: 45%;">Frequency Tested</th>
+                                <th style="width: 30%;">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableAiTraceBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================== -->
+<!-- DATASET-LEVEL RESULTS (4 Metrics Only)                                   -->
+<!-- ======================================================================== -->
+<div class="card-dark">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid var(--border-color);">
+        <h6 class="fw-bold text-white mb-0">
+            <i class="bi bi-graph-up text-primary me-2"></i>Dataset-Level Results (4,000 Blind Test Chips)
+        </h6>
+        <span class="text-secondary small">Overall Project Benchmark</span>
+    </div>
+
+    <div class="row g-3">
+        <!-- Metric 1: Conv Avg Tests -->
+        <div class="col-lg-3 col-6">
+            <div class="p-3 rounded bg-dark border border-secondary-subtle text-center">
+                <div class="text-secondary small mb-1">Conventional Average Tests</div>
+                <div class="fs-4 fw-bold text-white" id="panelConvAvgTests">6.46</div>
+            </div>
+        </div>
+
+        <!-- Metric 2: AI Avg Tests -->
+        <div class="col-lg-3 col-6">
+            <div class="p-3 rounded bg-dark border border-primary-subtle text-center">
+                <div class="text-secondary small mb-1">AI Average Tests</div>
+                <div class="fs-4 fw-bold text-cyan" id="panelAiAvgTests">3.94</div>
+            </div>
+        </div>
+
+        <!-- Metric 3: Average Test Reduction -->
+        <div class="col-lg-3 col-6">
+            <div class="p-3 rounded bg-dark border border-success-subtle text-center">
+                <div class="text-secondary small mb-1">Average Test Reduction</div>
+                <div class="fs-4 fw-bold text-teal" id="panelReductionPct">39.03%</div>
+            </div>
+        </div>
+
+        <!-- Metric 4: Speed-Bin Accuracy -->
+        <div class="col-lg-3 col-6">
+            <div class="p-3 rounded bg-dark border border-secondary-subtle text-center">
+                <div class="text-secondary small mb-1">Speed-Bin Accuracy</div>
+                <div class="fs-4 fw-bold text-white" id="panelBinAccuracy">96.85%</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+{% endblock %}

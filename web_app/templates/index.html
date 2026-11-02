@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_heading %}Semiconductor ATE Test Optimization Dashboard{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ==========================================================================
+       Main Dashboard: Visibility & High-Contrast Styling for Specified Items
+       ========================================================================== */
+    /* 1. Brand Subtitle: ATE Test Time Reduction */
+    .brand-section small,
+    .brand-section .text-muted {
+        color: #CBD5E1 !important;
+        font-weight: 500 !important;
+        opacity: 1 !important;
+        display: block;
+        letter-spacing: 0.02em;
+    }
+
+    /* 2-5. Specifications & KPI Labels */
+    .dashboard-item-label {
+        color: #CBD5E1 !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    .dashboard-item-value {
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+
+    .dashboard-item-desc {
+        color: #CBD5E1 !important;
+        font-size: 0.825rem;
+        line-height: 1.4;
+    }
+
+    .dashboard-subtitle-badge {
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.4) !important;
+        font-weight: 600;
+        font-size: 0.775rem;
+    }
+
+    .dashboard-metric-helper {
+        color: #CBD5E1 !important;
+        font-size: 0.75rem;
+        line-height: 1.35;
+    }
+
+    /* Remove unwanted text selection highlight */
+    .dashboard-item-label,
+    .metric-title {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    ::selection {
+        background: rgba(59, 130, 246, 0.3) !important;
+        color: #FFFFFF !important;
+    }
+    ::-moz-selection {
+        background: rgba(59, 130, 246, 0.3) !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Screen size responsiveness */
+    @media (max-width: 768px) {
+        .dashboard-item-label {
+            font-size: 0.75rem !important;
+        }
+        .dashboard-item-value {
+            font-size: 0.95rem;
+        }
+        .dashboard-item-desc {
+            font-size: 0.775rem;
+        }
+        .dashboard-metric-helper {
+            font-size: 0.72rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Key Performance Highlights -->
+    <div class="col-md-3">
+        <div class="card-dark h-100">
+            <div class="metric-title dashboard-item-label">Test Step Reduction</div>
+            <div class="metric-value text-primary" id="metricStepReduction">39.0%</div>
+            <div class="metric-subtitle">
+                <span class="badge badge-success-subtle dashboard-subtitle-badge"><i class="bi bi-arrow-down"></i> 6.46 &rarr; 3.94 tests</span>
+            </div>
+            <div class="form-helper mt-2 dashboard-metric-helper">Saved ~2.52 tests/unit across 4,000 tested chips</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card-dark h-100">
+            <div class="metric-title">Model Accuracy (R&sup2;)</div>
+            <div class="metric-value text-info" id="metricR2">0.9318</div>
+            <div class="metric-subtitle">
+                <span class="badge badge-tech">MAE: <span id="metricMAE">21.59</span> MHz</span>
+            </div>
+            <div class="form-helper mt-2">RMSE: <span id="metricRMSE">27.17</span> MHz on 4,000 unseen test units</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card-dark h-100">
+            <div class="metric-title">Search Completion Rate</div>
+            <div class="metric-value text-success" id="metricCompletionRate">100.0%</div>
+            <div class="metric-subtitle">
+                <span class="badge badge-success-subtle">4,000 / 4,000 Resolved</span>
+            </div>
+            <div class="form-helper mt-2">100% resolution with Algorithm 1 recovery modes</div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card-dark h-100">
+            <div class="metric-title">Speed-Bin Accuracy</div>
+            <div class="metric-value text-warning" id="metricBinAccuracy">96.85%</div>
+            <div class="metric-subtitle">
+                <span class="badge badge-warning-subtle">Bin size: 50 MHz</span>
+            </div>
+            <div class="form-helper mt-2">Under 4.0 MHz Gaussian test-repeatability noise</div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Overview and Dataset Pipeline -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-white"><i class="bi bi-cpu text-primary me-2"></i>Executive Summary & Methodology</h5>
+                <span class="badge badge-tech">IEEE / Industrial ATE Flow</span>
+            </div>
+            <p class="text-secondary mb-3" style="line-height: 1.6;">
+                In high-volume semiconductor manufacturing, Automated Test Equipment (ATE) frequency testing (Fmax) is one of the most expensive test insertion steps. Conventional test algorithms execute binary searches across the entire wide frequency grid (1600 MHz to 2400 MHz, 81 points).
+            </p>
+            <p class="text-secondary mb-3" style="line-height: 1.6;">
+                This project implements an <strong>AI-Optimized Fmax Search</strong> framework. Machine learning models (GradientBoostingRegressor) predict the expected Fmax using pre-test wafer sort parametric measurements (ring oscillators, leakage currents, minimum operating voltages, and die position). A calibrated narrow search window (&plusmn;39.80 MHz, based on empirical residual uncertainty &sigma;<sub>calib</sub> = 26.53 MHz) isolates testing to 9 points instead of 81. Robust algorithmic recovery (stride-doubling upper extension and lower fallback) guarantees 100% search completion under 4.0 MHz Gaussian measurement repeatability noise.
+            </p>
+            
+            <div class="row g-3 pt-2">
+                <div class="col-md-4">
+                    <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                        <div class="text-muted small fw-semibold">CONVENTIONAL SEARCH</div>
+                        <div class="h5 fw-bold text-white my-1">6.46 Tests / Unit</div>
+                        <div class="small text-secondary">Searches entire 800 MHz span (81 grid steps)</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                        <div class="text-muted small fw-semibold">AI-WINDOWED SEARCH</div>
+                        <div class="h5 fw-bold text-success my-1">3.94 Tests / Unit</div>
+                        <div class="small text-secondary">Searches narrow 80 MHz window (9 grid steps)</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                        <div class="text-muted small fw-semibold">TIME SAVED</div>
+                        <div class="h5 fw-bold text-primary my-1">39.03% Savings</div>
+                        <div class="small text-secondary">2.52 fewer ATE test steps per semiconductor die</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card-dark h-100">
+            <h5 class="fw-bold mb-3 text-white"><i class="bi bi-diagram-3 text-cyan me-2"></i>Dataset & Split Partition</h5>
+            <div class="d-flex flex-column gap-3">
+                <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-secondary small">Total Synthetic Dataset</span>
+                        <strong class="text-white" id="statTotalUnits">6,000 units</strong>
+                    </div>
+                    <div class="progress" style="height: 6px; background-color: #1f293d;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+                
+                <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-secondary small">Training Set (25%)</span>
+                        <strong class="text-white" id="statTrainUnits">1,500 units</strong>
+                    </div>
+                    <div class="progress" style="height: 6px; background-color: #1f293d;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 25%"></div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Model fitting on 15 scaled electrical features</small>
+                </div>
+                
+                <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-secondary small">Calibration Set (8.33%)</span>
+                        <strong class="text-white" id="statCalibUnits">500 units</strong>
+                    </div>
+                    <div class="progress" style="height: 6px; background-color: #1f293d;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 8.33%"></div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Calibrates &sigma;<sub>calib</sub> = 26.53 MHz (k=1.5 &rarr; &plusmn;39.80 MHz)</small>
+                </div>
+                
+                <div class="p-3 rounded" style="background: #0d1322; border: 1px solid var(--border-color);">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-secondary small">Blind Test Evaluation (66.67%)</span>
+                        <strong class="text-white" id="statTestUnits">4,000 units</strong>
+                    </div>
+                    <div class="progress" style="height: 6px; background-color: #1f293d;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 66.67%"></div>
+                    </div>
+                    <small class="text-muted" style="font-size: 0.72rem;">Full search algorithm benchmark & speed-bin verification</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Comparison Charts & Search Breakdown -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <h5 class="fw-bold mb-3 text-white"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Test Step Comparison</h5>
+            <div style="height: 280px; position: relative;">
+                <canvas id="chartTestSteps"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <h5 class="fw-bold mb-3 text-white"><i class="bi bi-pie-chart-fill text-info me-2"></i>AI Search Resolution Modes (4,000 Units)</h5>
+            <div style="height: 280px; position: relative;">
+                <canvas id="chartSearchModes"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model & Calibration Specifications Card -->
+<div class="card-dark mb-4">
+    <h5 class="fw-bold mb-3 text-white"><i class="bi bi-sliders text-warning me-2"></i>Model Architecture & Search Specifications</h5>
+    <div class="row g-4">
+        <div class="col-md-3">
+            <div class="dashboard-item-label small">REGRESSION MODEL</div>
+            <div class="fw-semibold dashboard-item-value text-white">GradientBoostingRegressor</div>
+            <div class="small dashboard-item-desc">300 trees, lr=0.05, max_depth=5</div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-item-label small">FREQUENCY GRID</div>
+            <div class="fw-semibold dashboard-item-value text-white">1600 - 2400 MHz</div>
+            <div class="small dashboard-item-desc">Step = 10 MHz (81 points total)</div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-item-label small">UNCERTAINTY WINDOW</div>
+            <div class="fw-semibold dashboard-item-value text-white">&plusmn; 39.80 MHz (k = 1.5)</div>
+            <div class="small dashboard-item-desc">&sigma;<sub>calib</sub> = 26.53 MHz on calibration set</div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-item-label small">ATE TEST REPEATABILITY NOISE</div>
+            <div class="fw-semibold dashboard-item-value text-white">&sigma; = 4.0 MHz Gaussian</div>
+            <div class="small dashboard-item-desc">Independent per-test execution, Seed = 42</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Experiment Results{% endblock %}
+{% block page_heading %}Benchmark Results & Dataset Search Records{% endblock %}
+
+{% block content %}
+<!-- Download Actions & Controls Card -->
+<div class="card-dark mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="fw-bold text-white mb-1"><i class="bi bi-table text-primary me-2"></i>Blind Test Set Benchmark Records</h5>
+            <div class="text-secondary small">Individual search results across 4,000 unseen test units under 4.0 MHz test noise.</div>
+        </div>
+        
+        <!-- Direct CSV Downloads -->
+        <div class="d-flex gap-2">
+            <a href="/api/download/search_comparison.csv" class="btn btn-sm btn-outline-dark" download>
+                <i class="bi bi-download me-1"></i> search_comparison.csv
+            </a>
+            <a href="/api/download/evaluation_results.csv" class="btn btn-sm btn-outline-dark" download>
+                <i class="bi bi-download me-1"></i> evaluation_results.csv
+            </a>
+            <a href="/api/download/metrics.json" class="btn btn-sm btn-outline-dark" download>
+                <i class="bi bi-file-earmark-code me-1"></i> metrics.json
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters and Table Controls -->
+<div class="card-dark mb-4">
+    <div class="row g-3 align-items-center justify-content-between mb-3">
+        <!-- Filter by Search Type -->
+        <div class="col-md-5 d-flex align-items-center gap-2">
+            <label class="form-label-custom mb-0 text-nowrap" for="filterSearchType">Search Type:</label>
+            <select class="form-select form-control-dark form-select-sm" id="filterSearchType">
+                <option value="all">All Search Modes (4,000 units)</option>
+                <option value="direct_window">Direct In-Window (3,603 units)</option>
+                <option value="upper_extension">Upper Extension (215 units)</option>
+                <option value="lower_fallback">Lower Fallback (182 units)</option>
+            </select>
+        </div>
+
+        <!-- Page Limit -->
+        <div class="col-md-4 d-flex align-items-center justify-content-md-end gap-2">
+            <span class="text-secondary small">Per page:</span>
+            <select class="form-select form-control-dark form-select-sm" id="selectPageLimit" style="width: 80px;">
+                <option value="15">15</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-muted small ms-2" id="resultsCountText">Showing records...</span>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="table-responsive">
+        <table class="table-dark-custom" id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Unit ID</th>
+                    <th>True Fmax</th>
+                    <th>Pred Fmax</th>
+                    <th>Window Bounds</th>
+                    <th>Conv Tests</th>
+                    <th>AI Tests</th>
+                    <th>Reduction</th>
+                    <th>Resolution Type</th>
+                    <th>Speed Bin</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+                <!-- Dynamically populated -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px solid var(--border-color);">
+        <div class="text-secondary small" id="pageIndicatorText">Page 1 of 160</div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-dark" id="btnPrevPage" disabled>
+                <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <button class="btn btn-sm btn-outline-dark" id="btnNextPage">
+                Next <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
+{% endblock %}
+

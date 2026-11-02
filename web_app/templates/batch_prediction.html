@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Prediction{% endblock %}
+{% block page_heading %}Batch Fmax Prediction{% endblock %}
+
+{% block content %}
+<!-- Page Subtitle -->
+<div class="mb-4">
+    <p class="text-secondary mb-0">
+        Upload a CSV file containing up to 1,000 chip electrical measurements to predict Fmax and calculate recommended search windows for each chip.
+    </p>
+</div>
+
+<!-- ======================================================================== -->
+<!-- SECTION 1: CSV Upload Card                                               -->
+<!-- ======================================================================== -->
+<div class="card-dark mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-white mb-0">
+            <i class="bi bi-cloud-arrow-up text-primary me-2"></i>1. Upload Chip Records CSV (Up to 1,000 Chips)
+        </h6>
+        <a href="/api/sample-batch-csv" class="btn btn-sm btn-outline-dark" id="btnDownloadSample">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Download Sample CSV
+        </a>
+    </div>
+
+    <!-- Upload Form -->
+    <form id="batchUploadForm" enctype="multipart/form-data">
+        <div class="p-4 rounded border text-center mb-3" id="dropZone" style="border-color: var(--border-color); background-color: #0b111e; border-style: dashed !important; cursor: pointer;">
+            <input type="file" id="batchCsvInput" accept=".csv" class="d-none">
+            <i class="bi bi-file-earmark-spreadsheet fs-1 text-primary mb-2 d-block"></i>
+            <div class="fw-bold text-white mb-1" id="fileSelectPrompt">Click or Drag & Drop a CSV file here</div>
+            <div class="text-secondary small mb-3" id="fileSelectDetails">Maximum 1,000 records. Supported format: .csv</div>
+            <button type="button" class="btn btn-sm btn-outline-primary px-3" id="btnBrowseFile">
+                <i class="bi bi-folder2-open me-1"></i> Browse File
+            </button>
+            <div class="text-info fw-semibold mt-2 d-none" id="selectedFileInfo">
+                <i class="bi bi-check2-circle me-1"></i><span id="selectedFileName"></span> (<span id="selectedFileSize"></span>)
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <!-- Required Columns Hint -->
+            <div class="text-secondary small">
+                <span class="text-muted fw-semibold">Required columns:</span>
+                <code>chip_id</code> (or <code>unit_id</code>), <code>ro_01</code>&ndash;<code>ro_10</code>, <code>iddq_norm</code>, <code>vmin_norm</code>, <code>die_x</code>, <code>die_y</code>, <code>radius_sq</code>
+            </div>
+
+            <!-- Action Button -->
+            <button type="submit" class="btn btn-primary px-4 py-2" id="btnRunBatch" disabled>
+                <span class="spinner-border spinner-border-sm me-1 d-none" id="batchSpinner" role="status"></span>
+                <i class="bi bi-play-fill me-1" id="batchPlayIcon"></i> Run Batch Prediction
+            </button>
+        </div>
+    </form>
+
+    <!-- Error Message Alert -->
+    <div class="alert alert-danger d-none mt-3 mb-0" id="batchErrorAlert" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><span id="batchErrorMessage"></span>
+    </div>
+
+    <!-- Success Message Alert -->
+    <div class="alert alert-success d-none mt-3 mb-0" id="batchSuccessAlert" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i><span id="batchSuccessMessage"></span>
+    </div>
+</div>
+
+<!-- ======================================================================== -->
+<!-- SECTION 2: Prediction Results Table                                      -->
+<!-- ======================================================================== -->
+<div class="card-dark">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 pb-2" style="border-bottom: 1px solid var(--border-color);">
+        <div>
+            <h6 class="fw-bold text-white mb-0">
+                <i class="bi bi-table text-cyan me-2"></i>2. Prediction Results
+            </h6>
+            <div class="text-secondary small" id="batchStatusText">Awaiting CSV upload and batch prediction execution.</div>
+        </div>
+
+        <!-- Download Results CSV Button -->
+        <div>
+            <button type="button" class="btn btn-success btn-sm px-3" id="btnDownloadResultsCsv" disabled>
+                <i class="bi bi-download me-1"></i> Download Results (CSV)
+            </button>
+        </div>
+    </div>
+
+    <!-- Summary Stats Strip (hidden until predictions ready) -->
+    <div class="row g-3 mb-3 d-none" id="batchSummaryStrip">
+        <div class="col-md-3 col-6">
+            <div class="p-2 rounded bg-dark border border-secondary-subtle text-center">
+                <div class="text-secondary small">Total Chips</div>
+                <div class="fs-5 fw-bold text-white" id="summaryTotalChips">0</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="p-2 rounded bg-dark border border-primary-subtle text-center">
+                <div class="text-secondary small">Avg Predicted Fmax</div>
+                <div class="fs-5 fw-bold text-cyan" id="summaryAvgFmax">0 MHz</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="p-2 rounded bg-dark border border-secondary-subtle text-center">
+                <div class="text-secondary small">Min Predicted Fmax</div>
+                <div class="fs-5 fw-bold text-white" id="summaryMinFmax">0 MHz</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="p-2 rounded bg-dark border border-secondary-subtle text-center">
+                <div class="text-secondary small">Max Predicted Fmax</div>
+                <div class="fs-5 fw-bold text-white" id="summaryMaxFmax">0 MHz</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table Container -->
+    <div class="table-responsive" style="max-height: 520px; overflow-y: auto;">
+        <table class="table-dark-custom align-middle" id="batchResultsTable">
+            <thead style="position: sticky; top: 0; background-color: #0c121e; z-index: 2;">
+                <tr>
+                    <th style="width: 80px;">#</th>
+                    <th>Chip ID</th>
+                    <th>Predicted Fmax (MHz)</th>
+                    <th>Search Window Lower (MHz)</th>
+                    <th>Search Window Upper (MHz)</th>
+                    <th>Recommended Search Window</th>
+                </tr>
+            </thead>
+            <tbody id="batchTableBody">
+                <tr id="emptyBatchRow">
+                    <td colspan="6" class="text-center py-5 text-secondary">
+                        <i class="bi bi-inbox fs-2 d-block mb-2 text-muted"></i>
+                        No batch predictions yet. Select and upload a CSV file above to begin.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/batch_prediction.js') }}"></script>
+{% endblock %}
+

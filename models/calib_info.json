@@ -1,0 +1,8 @@
+{
+  "sigma_calib": 26.530724849884006,
+  "window_half_mhz": 39.79608727482601,
+  "calib_multiplier": 1.5,
+  "mean_error_mhz": 2.1167433357718335,
+  "calib_mae_mhz": 21.405126468668197,
+  "calib_rmse_mhz": 26.615032658439237
+}

@@ -1,0 +1,52 @@
+{
+  "regression": {
+    "label": "Test Set",
+    "n": 4000,
+    "mae_mhz": 21.5923,
+    "rmse_mhz": 27.1734,
+    "r2": 0.931837,
+    "mean_error_mhz": 0.6763,
+    "std_error_mhz": 27.165,
+    "p5_error_mhz": -43.86,
+    "p95_error_mhz": 45.29
+  },
+  "search": {
+    "n_test_units": 4000,
+    "avg_tests_binary_ai": 6.4565,
+    "avg_tests_windowed_ai": 3.9365,
+    "abs_reduction_tests": 2.52,
+    "pct_reduction_tests": 39.03,
+    "p50_tests_binary": 6.0,
+    "p95_tests_binary": 7.0,
+    "max_tests_binary": 7,
+    "p50_tests_windowed": 4.0,
+    "p95_tests_windowed": 7.0,
+    "max_tests_windowed": 11,
+    "completion_rate_binary": 1.0,
+    "completion_rate_windowed": 1.0,
+    "speed_bin_accuracy": 0.9685,
+    "measured_freq_mae_mhz": 5.8446,
+    "measured_freq_rmse_mhz": 7.0628,
+    "search_type_counts": {
+      "window_direct": 3603,
+      "upper_extension": 215,
+      "lower_fallback": 182
+    },
+    "avg_tests_binary_csv": 6.4538,
+    "avg_tests_windowed_csv": 3.9085
+  },
+  "doc_reference": {
+    "rmse_mhz_doc": 26.9,
+    "avg_binary_tests_doc": 6.45,
+    "avg_windowed_tests_doc": 3.89,
+    "pct_reduction_doc": 39.7
+  },
+  "calib_info": {
+    "sigma_calib": 26.530724849884006,
+    "window_half_mhz": 39.79608727482601,
+    "calib_multiplier": 1.5,
+    "mean_error_mhz": 2.1167433357718335,
+    "calib_mae_mhz": 21.405126468668197,
+    "calib_rmse_mhz": 26.615032658439237
+  }
+}

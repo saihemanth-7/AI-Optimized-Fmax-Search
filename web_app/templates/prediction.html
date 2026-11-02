@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Fmax Prediction{% endblock %}
+{% block page_heading %}Chip Pre-Test Electrical Measurements & Fmax Inference{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Input Form Column -->
+    <div class="col-lg-7">
+        <div class="card-dark">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-white"><i class="bi bi-cpu text-primary me-2"></i>15 Pre-Test Parametric Measurements</h5>
+                    <small class="text-muted">Enter wafer probe parametric test measurements for model inference</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <select class="form-select form-control-dark form-select-sm" id="sampleUnitSelect" style="max-width: 210px;">
+                        <option value="">Load Curated Sample...</option>
+                    </select>
+                    <button type="button" class="btn btn-sm btn-outline-dark" id="btnResetForm">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </div>
+
+            <form id="predictionForm">
+                <!-- Ring Oscillators RO_01 to RO_10 -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="form-label-custom text-info"><i class="bi bi-activity me-1"></i>Ring Oscillators RO_01 to RO_10</span>
+                        <span class="form-helper">Normalized core speed proxy circuits</span>
+                    </div>
+                    <div class="row g-2">
+                        {% for i in range(1, 11) %}
+                        {% set ro_id = "ro_%02d" % i %}
+                        <div class="col-sm-6 col-md-4 col-xl-2">
+                            <label class="form-label-custom" for="{{ ro_id }}">RO_{{ "%02d" % i }}</label>
+                            <input type="number" step="any" class="form-control form-control-dark form-control-sm" 
+                                   id="{{ ro_id }}" name="{{ ro_id }}" required placeholder="e.g. 0.15">
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Parametric DC Tests -->
+                <div class="mb-3 pt-2" style="border-top: 1px solid var(--border-color);">
+                    <span class="form-label-custom text-warning"><i class="bi bi-lightning-charge me-1"></i>DC Parametric Leakage & Voltage</span>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-6">
+                            <label class="form-label-custom" for="iddq_norm">IDDQ (Normalized Leakage)</label>
+                            <input type="number" step="any" class="form-control form-control-dark" 
+                                   id="iddq_norm" name="iddq_norm" required placeholder="e.g. 1.050">
+                            <div class="form-helper">Quiescent power supply leakage current</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-custom" for="vmin_norm">Vmin (Normalized Operating Voltage)</label>
+                            <input type="number" step="any" class="form-control form-control-dark" 
+                                   id="vmin_norm" name="vmin_norm" required placeholder="e.g. 0.980">
+                            <div class="form-helper">Minimum operational supply voltage threshold</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wafer Spatial Coordinates -->
+                <div class="mb-4 pt-2" style="border-top: 1px solid var(--border-color);">
+                    <span class="form-label-custom text-success"><i class="bi bi-geo-alt me-1"></i>Wafer Die Spatial Location</span>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-4">
+                            <label class="form-label-custom" for="die_x">Die X Coordinate</label>
+                            <input type="number" step="any" class="form-control form-control-dark" 
+                                   id="die_x" name="die_x" required placeholder="e.g. -0.35">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-custom" for="die_y">Die Y Coordinate</label>
+                            <input type="number" step="any" class="form-control form-control-dark" 
+                                   id="die_y" name="die_y" required placeholder="e.g. 0.42">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-custom" for="radius_sq">Radius Squared (X&sup2; + Y&sup2;)</label>
+                            <input type="number" step="any" class="form-control form-control-dark" 
+                                   id="radius_sq" name="radius_sq" required placeholder="Auto or e.g. 0.2989">
+                            <div class="form-helper">Distance from wafer center</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-primary-blue flex-grow-1" id="btnPredict">
+                        <span id="btnPredictSpinner" class="spinner-border spinner-border-sm d-none me-2" role="status"></span>
+                        <i class="bi bi-cpu-fill me-1"></i> Predict Fmax & Generate Search Window
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Output & Visualization Column -->
+    <div class="col-lg-5">
+        <!-- Initial Guidance Card -->
+        <div id="predictionEmptyState" class="card-dark text-center py-5">
+            <div class="brand-icon mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.8rem;">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h5 class="fw-bold text-white mb-2">Awaiting Parametric Features</h5>
+            <p class="text-secondary small px-4 mb-4">
+                Select a sample chip from the dropdown or manually enter 15 electrical measurements to calculate the predicted Fmax and search window.
+            </p>
+            <div class="d-inline-flex gap-2">
+                <span class="badge badge-tech">GBR Inference</span>
+                <span class="badge badge-tech">&sigma;<sub>calib</sub> = 26.53 MHz</span>
+                <span class="badge badge-tech">Grid: 10 MHz</span>
+            </div>
+        </div>
+
+        <!-- Prediction Result Container (Hidden until prediction) -->
+        <div id="predictionResultCard" class="card-dark d-none">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-white"><i class="bi bi-check-circle-fill text-success me-2"></i>Inference Results</h5>
+                <span class="badge badge-success-subtle" id="badgeUnitId">Model Output</span>
+            </div>
+
+            <!-- Predicted Fmax -->
+            <div class="p-3 rounded mb-3" style="background: #0d1322; border: 1px solid var(--border-color);">
+                <div class="metric-title">Predicted Maximum Frequency (&Fcirc;<sub>pred</sub>)</div>
+                <div class="d-flex align-items-baseline gap-2">
+                    <span class="display-6 fw-bold text-primary" id="resPredFmax">--</span>
+                    <span class="h5 text-muted">MHz</span>
+                </div>
+                <div class="text-secondary small mt-1">
+                    Nearest grid center: <strong class="text-white" id="resGridCenter">--</strong> MHz
+                </div>
+            </div>
+
+            <!-- Uncertainty Window Specifications -->
+            <div class="row g-3 mb-3">
+                <div class="col-6">
+                    <div class="p-3 rounded h-100" style="background: #0d1322; border: 1px solid var(--border-color);">
+                        <div class="metric-title">Search Window Bounds</div>
+                        <div class="h6 fw-bold text-white mb-1" id="resWindowBounds">[--, --] MHz</div>
+                        <div class="small text-secondary" id="resWindowHalf">&plusmn; 39.80 MHz (k=1.5&sigma;)</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 rounded h-100" style="background: #0d1322; border: 1px solid var(--border-color);">
+                        <div class="metric-title">Grid Candidate Points</div>
+                        <div class="h6 fw-bold text-success mb-1" id="resCandidatePoints">-- points</div>
+                        <div class="small text-secondary">vs 81 full grid points</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Space Reduction KPI -->
+            <div class="p-3 rounded mb-3" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25);">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small fw-semibold text-primary">SEARCH SPACE REDUCTION</div>
+                        <div class="small text-secondary">Clamped search window over total 800 MHz span</div>
+                    </div>
+                    <div class="h4 fw-bold text-primary mb-0" id="resSpaceReduction">--%</div>
+                </div>
+            </div>
+
+            <!-- Physical Testing Disclaimer Banner -->
+            <div class="alert-disclaimer">
+                <div class="d-flex gap-2">
+                    <i class="bi bi-info-circle-fill text-cyan mt-1"></i>
+                    <div>
+                        <strong class="text-white d-block mb-1">Physical Testing Requirement</strong>
+                        In high-volume wafer manufacturing, frequency testing requires connecting physical silicon chips to automated test equipment (ATE) hardware testers. The predicted Fmax and calibrated search window (&plusmn;&Delta;F) narrow the candidate test frequencies to minimize tester execution time.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/prediction.js') }}"></script>
+{% endblock %}
+

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI-Optimized Fmax Search{% endblock %} | Semiconductor ATE Analytics</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar">
+        <div class="brand-section">
+            <div class="d-flex align-items-center gap-3">
+                <div class="brand-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold text-white">Fmax Search AI</h6>
+                    <small class="text-muted" style="font-size: 0.7rem;">ATE Test Time Reduction</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('view_dashboard') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Main Dashboard</span>
+            </a>
+            <a href="{{ url_for('view_prediction') }}" class="nav-link {% if active_page == 'prediction' %}active{% endif %}">
+                <i class="bi bi-calculator"></i>
+                <span>Fmax Prediction</span>
+            </a>
+            <a href="{{ url_for('view_batch_prediction') }}" class="nav-link {% if active_page == 'batch_prediction' %}active{% endif %}">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span>Batch Prediction</span>
+            </a>
+            <a href="{{ url_for('view_search') }}" class="nav-link {% if active_page == 'search' %}active{% endif %}">
+                <i class="bi bi-search"></i>
+                <span>Search Comparison</span>
+            </a>
+            <a href="{{ url_for('view_analytics') }}" class="nav-link {% if active_page == 'analytics' %}active{% endif %}">
+                <i class="bi bi-bar-chart-line"></i>
+                <span>Analytics & Graphs</span>
+            </a>
+            <a href="{{ url_for('view_results') }}" class="nav-link {% if active_page == 'results' %}active{% endif %}">
+                <i class="bi bi-table"></i>
+                <span>Experiment Results</span>
+            </a>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span>Model: <strong>GBR-300</strong></span>
+                <span class="badge badge-tech">v1.0</span>
+            </div>
+            <div class="text-muted">Grid: 1600-2400 MHz (10 MHz)</div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div id="main-content">
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-dark d-lg-none" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+                <h1 class="page-title">{% block page_heading %}Dashboard{% endblock %}</h1>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-tech"><i class="bi bi-check-circle-fill text-success me-1"></i> Model Loaded</span>
+                <span class="badge badge-tech"><i class="bi bi-sliders me-1"></i> Noise: 4.0 MHz</span>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Body -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

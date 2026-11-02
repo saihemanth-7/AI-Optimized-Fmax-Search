@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & Graphs{% endblock %}
+{% block page_heading %}Experimental Visualizations & Technical Analytics{% endblock %}
+
+{% block content %}
+<!-- Section Header -->
+<div class="card-dark mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold text-white mb-1"><i class="bi bi-graph-up text-primary me-2"></i>Published Experiment Figures</h5>
+            <div class="text-secondary small">Generated from the 4,000 blind test unit benchmark evaluation. Click any figure to view in full resolution.</div>
+        </div>
+        <span class="badge badge-tech"><i class="bi bi-shield-check me-1"></i> Original Experiment Outputs</span>
+    </div>
+</div>
+
+<!-- Figure Cards Grid -->
+<div class="row g-4 mb-4">
+    <!-- Fig 1 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 1: Actual vs. Predicted Fmax</span>
+                <span class="badge badge-tech">Regression R&sup2; = 0.9318</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Correlation between ground-truth Fmax and model prediction on 4,000 test dies. Confirms tight clustering along the ideal identity line with low residual spread.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig1_actual_vs_predicted.png', 'Figure 1: Actual vs. Predicted Fmax')">
+                <img src="/api/graphs/fig1_actual_vs_predicted.png" alt="Actual vs Predicted Fmax" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fig 2 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 2: Prediction Error Distribution</span>
+                <span class="badge badge-tech">&sigma;<sub>calib</sub> = 26.53 MHz</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Residual error histogram on the calibration partition. The empirical normal distribution establishes the &plusmn;39.80 MHz (&plusmn;1.5&sigma;) search window.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig2_error_distribution.png', 'Figure 2: Prediction Error Distribution')">
+                <img src="/api/graphs/fig2_error_distribution.png" alt="Prediction Error Distribution" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fig 3 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 3: Feature Importance Analysis</span>
+                <span class="badge badge-tech">15 Physical Predictors</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Gini feature importance ranking from GradientBoostingRegressor. Illustrates high contribution of critical ring oscillator stages and static leakage IDDQ.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig3_feature_importance.png', 'Figure 3: Feature Importance Analysis')">
+                <img src="/api/graphs/fig3_feature_importance.png" alt="Feature Importance" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fig 4 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 4: Conventional vs. AI Search Steps</span>
+                <span class="badge badge-tech">Algorithm 1 Benchmark</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Comparison of test step counts across individual test dies. Demonstrates the consistent step reduction achieved by narrowing the search span.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig4_search_comparison.png', 'Figure 4: Conventional vs. AI Search Steps')">
+                <img src="/api/graphs/fig4_search_comparison.png" alt="Search Comparison" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fig 5 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 5: Test Step Reduction Distribution</span>
+                <span class="badge badge-tech">Mean: 39.03% Reduction</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Histogram of percentage test-time reduction across 4,000 units. Majority of chips achieve 40% to 55% reduction, with edge cases requiring modest extensions.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig5_step_reduction.png', 'Figure 5: Test Step Reduction Distribution')">
+                <img src="/api/graphs/fig5_step_reduction.png" alt="Step Reduction" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Fig 6 -->
+    <div class="col-lg-6">
+        <div class="card-dark h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-white">Figure 6: Predicted vs. Measured Fmax</span>
+                <span class="badge badge-tech">Speed-Bin: 96.85% Acc</span>
+            </div>
+            <p class="text-secondary small mb-3">
+                Post-search final measured frequency vs initial ML prediction. Confirms exact binning alignment and 100% search completion across all 4,000 units.
+            </p>
+            <div class="figure-container rounded overflow-hidden" style="background: #000; cursor: pointer;" 
+                 onclick="openImageModal('/api/graphs/fig6_predicted_vs_measured.png', 'Figure 6: Predicted vs. Measured Fmax')">
+                <img src="/api/graphs/fig6_predicted_vs_measured.png" alt="Predicted vs Measured Fmax" class="img-fluid w-100 rounded" style="transition: transform 0.2s ease;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal for Full Resolution Viewing -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--bg-card); border: 1px solid var(--border-color);">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                <h5 class="modal-title text-white fw-bold" id="imageModalTitle">Figure</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2 text-center" style="background-color: #000;">
+                <img id="imageModalImg" src="" alt="Full Resolution Figure" class="img-fluid rounded">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}
+
